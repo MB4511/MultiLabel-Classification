@@ -13,3 +13,16 @@ data.tr<-cbind(data.tr1,data.tr)                #binding the unique identifier w
 first.600 <- data.tr[label=='T-shirt/top',.SD,]        #first 6000 obs
 second.600 <- data.tr[label=='Trouser',.SD,]           #6001-12000 obs
 third.600 <- data.tr[label=='Sandal',.SD,]             #30001-36000 obs (yes,ordered consistently)
+
+#sample sizes
+
+dat_500_1 <- set.size(500, data.train)
+dat_500_2 <- set.size(500, data.train)
+dat_500_3 <- set.size(500, data.train)
+dat_1000_1 <- set.size(1000, data.train)
+dat_1000_2 <- set.size(1000, data.train)
+dat_1000_3 <- set.size(1000, data.train)
+dat_2000_1 <- set.size(2000, data.train)
+dat_2000_2 <- set.size(2000, data.train)
+dat_2000_3 <- set.size(2000, data.train)
+dat_5000_1 <- set.size(5000, data.train)
