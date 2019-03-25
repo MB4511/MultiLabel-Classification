@@ -1,0 +1,25 @@
+#naming 
+
+n.values <- c(500, 1000, 2000)
+iterations <- 3
+svm1.name <- "SVM 1"
+svm2.name <- "SVM 2"
+rf1.name <- "Random Forest 1"
+rf2.name <- "Random Forest 2"
+knn1.name <- "KNN 1"
+knn3.name <- "KNN 3"
+ridge.name <- "Ridge Regression"
+mln.name <- "Multinomial"
+lasso.name <- "Lasso"
+ensemble.name <- "Ensemble"
+scoring_name <- "scoring"
+final_name <- "fin"
+model.name.list <- c("svm1","svm2","rf1","rf2","knn1","knn3", "ridge","mln", "lasso", "ensemble")
+
+#read data
+
+data.train.source <- 'MNIST-fashion training set-49.csv'
+data.test.source <- 'MNIST-fashion testing set-49.csv'
+
+data.train<-fread(data.train.source)
+data.test<-fread(data.test.source)
