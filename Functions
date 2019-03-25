@@ -1,0 +1,102 @@
+# libraries
+
+library(data.table)
+library(DT)
+library(nnet)
+library(class)
+library(randomForest)
+library(gbm)
+library(e1071)
+library(xgboost)
+library(dplyr)
+library(caret)
+library(ggplot2)
+library(glmnet)
+library(MLmetrics)
+library(ROCR)
+
+## functions 
+
+#round
+round.numerics <- function(x, digits){
+  if(is.numeric(x)){
+    x <- round(x = x, digits = digits)
+  }
+  return(x)
+}
+
+#sample sizes
+
+set.size<-function(n,dat){
+  the.rows<-sample(x=1:dat[,.N],size=n,replace = FALSE)
+  return(dat[the.rows,])
+}
+
+#scoring parameters
+
+parameters <- function(data, model) {
+
+tic=Sys.time()
+correct <- model(data)
+toc=Sys.time() 
+A = nrow(data)/nrow(data.train) 
+B1 = as.numeric(toc) - as.numeric(tic)
+B = ifelse(B1 <= 60, B1/60, 1)
+C = ((10000-correct)/10000)
+points = 0.25*A + (0.25*(B)) + (0.5 * C)
+
+return(round(c(A, B, C, points),4))
+}
+
+#model iterations
+
+model_iterations <-function(name, model, iter = iterations, size = n.values){
+  output <- data.frame(matrix(nrow = 0, ncol = 7))
+  for (i in n.values){
+    for (j in 1:iter){
+      df.name <- paste("dat",i,j, sep = "_")
+      df <- get(df.name)
+      param <- parameters(df, model)
+      op <- c(name, i, df.name, param)
+      op.df <- data.frame(t(op))
+      output <- rbind(output, op.df)
+    }
+    
+  }
+  colnames(output) <- c("Model","Sample Size","Data","A", "B","C", "Points")
+  return(output)
+}
+
+#scoring 
+
+scoring <- function(output){
+  output <- as.data.table(output)
+  df <- output[, .(A = mean(as.numeric(as.character(A))), B = mean(as.numeric(as.character(B))), C = mean(as.numeric(as.character(C))), Points =    mean(as.numeric(as.character(Points)))), by = .(Model, `Sample Size`)]
+  df <- cbind(df[,1:2], round(df[,3:6],4))
+  return(df)
+}
+
+#merge tables
+
+merge_tables <- function(table.name, model.name.list){
+  if (table.name == "fin"){
+    df = data.frame(matrix(nrow = 0, ncol = 7))
+    colnames(df) <- c("Model","Sample Size","Data","A", "B","C", "Points")
+    for (i in 1:length(model.name.list)){
+      name <- paste(model.name.list[i], table.name, sep = "_")
+      df <- rbind(df, get(name))
+    }
+    return(df)
+  }
+  else if (table.name == "scoring"){
+    df = data.frame(matrix(nrow = 0, ncol = 6))
+    colnames(df) <- c("Model","Sample Size","A", "B","C", "Points")
+    for (i in 1:length(model.name.list)){
+      name <- paste(table.name, model.name.list[i], sep = "_")
+      df <- rbind(df, get(name))
+    }
+    df <- setorderv(x = df, cols = "Points", order = 1)
+    df <- cbind(df[,1:2], round(df[,3:6],4))
+  return(df)   
+  }
+}
