@@ -1,0 +1,15 @@
+na.values.train <- sum(is.na(data.train))      #no missing values in train
+na.values.test <- sum(is.na(data.test))        #no missing values in test
+
+values1 <- data.train[,.N,label]   #6000 values for each label (tshirt,trouser,trouser,pullover,dress,coat,sandal,shirt,sneaker,bag,ankle boot)
+
+values2 <- data.test[,.N,label]    #1000 values for each label
+
+data.tr<-copy(data.train)                       #copy of training dataset
+data.tr1<-data.tr[,.('Id no'=1:nrow(data.tr)),] #introducing a new column with id no to uniquely identify each row
+data.tr<-cbind(data.tr1,data.tr)                #binding the unique identifier with the training dataset
+
+#checking for the order of these listed labels
+first.600 <- data.tr[label=='T-shirt/top',.SD,]        #first 6000 obs
+second.600 <- data.tr[label=='Trouser',.SD,]           #6001-12000 obs
+third.600 <- data.tr[label=='Sandal',.SD,]             #30001-36000 obs (yes,ordered consistently)
