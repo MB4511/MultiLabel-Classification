@@ -1,0 +1,351 @@
+# Support Vector Machine Model1
+
+model_svm1 <- function(sample) {
+data_test_svm<-copy(data.test)
+svm <- copy(sample)
+svm$label <- as.factor(svm$label)
+data_test_svm$label <- as.factor(data_test_svm$label)
+levels(svm$label) <- make.names(levels(factor(svm$label)))
+levels(data_test_svm$label) <- make.names(levels(factor(data_test_svm$label)))
+
+mod_svm<-svm(label~., data=svm, method="C-classification", kernel="radial", gamma=0.001, cost = 10, probability = TRUE)
+
+pred_svm_train<-predict(mod_svm,data.train, decision.values = TRUE, probability = TRUE)
+pred_svm_test<-predict(mod_svm,newdata=data_test_svm, decision.values = TRUE, probability = TRUE)
+
+data_test_svm<-cbind(data_test_svm,pred_svm_test)
+correct_svm<-data_test_svm[label==pred_svm_test,.N]
+
+return(correct_svm)
+}
+
+#load model1
+
+svm1_model_final <- model_iterations(svm1.name, model_svm1, iterations, n.values)
+saveRDS(object = svm1_model_final, file = "svm1.rds")
+
+svm1_fin <- readRDS(file = "svm1.rds") 
+svm1_final <- datatable(svm1_fin)
+svm1_final
+scoring_svm1 <- scoring(svm1_fin)
+
+# Support Vector Machine Model2
+
+model_svm2 <- function(sample) {
+data_test_svm<-copy(data.test)
+svm <- copy(sample)
+svm$label <- as.factor(svm$label)
+data_test_svm$label <- as.factor(data_test_svm$label)
+levels(svm$label) <- make.names(levels(factor(svm$label)))
+levels(data_test_svm$label) <- make.names(levels(factor(data_test_svm$label)))
+
+mod_svm<-svm(label~., data=svm, method="C-classification", kernel="radial", gamma=0.001, cost = 100, probability = TRUE)
+
+pred_svm_train<-predict(mod_svm,data.train, decision.values = TRUE, probability = TRUE)
+pred_svm_test<-predict(mod_svm,newdata=data_test_svm, decision.values = TRUE, probability = TRUE)
+
+data_test_svm<-cbind(data_test_svm,pred_svm_test)
+correct_svm<-data_test_svm[label==pred_svm_test,.N]
+
+return(correct_svm)
+
+}
+
+#load model2
+
+svm2_model_final <- model_iterations(svm2.name, model_svm2, iterations, n.values)
+saveRDS(object = svm2_model_final, file = "svm2.rds")
+
+svm2_fin <- readRDS(file = "svm2.rds")
+svm2_final <- datatable(svm2_fin)
+svm2_final
+scoring_svm2 <- scoring(svm2_fin)
+
+# kNN with k=1
+
+model_knn1 <- function(dat.train){
+  data.knn.test<-copy(data.test)
+  dat.train$label <- as.factor(dat.train$label)
+  data.knn.test$label <- as.factor(data.knn.test$label)
+  levels(dat.train$label) <- make.names(levels(factor(dat.train$label)))
+  levels(data.knn.test$label) <- make.names(levels(factor(data.knn.test$label)))
+  
+  repeats = 3
+  numbers = 10
+  tunel = 1
+  
+  set.seed(1234)
+  x = trainControl(method = "repeatedcv",
+                  number = numbers,
+                  repeats = repeats,
+                  classProbs = TRUE,
+                  summaryFunction = multiClassSummary)
+
+  mod_knn <- train(label~. , data = dat.train, method = "knn",
+                preProcess = c("center","scale"),
+                trControl = x,
+                tuneLength = tunel)
+
+  test_pred <- predict(mod_knn, newdata = data.knn.test)
+
+  cm <- confusionMatrix(test_pred, data.knn.test$label)
+  accuracy <- cm$overall[[1]] #Accuracy
+  correct_knn <- length(data.knn.test$label)*accuracy
+  return(correct_knn)
+}
+#load model3
+
+knn1_model_final <- model_iterations(knn1.name, model_knn1, iterations, n.values)
+saveRDS(object = knn1_model_final, file = "knn1.rds")
+
+knn1_fin <- readRDS(file = "knn1.rds")
+knn1_final <- datatable(knn1_fin)
+knn1_final
+scoring_knn1 <- scoring(knn1_fin)
+
+# kNN with k=3
+
+model_knn3 <- function(dat.train){
+  data.knn.test<-copy(data.test)
+  dat.train$label <- as.factor(dat.train$label)
+  data.knn.test$label <- as.factor(data.knn.test$label)
+  levels(dat.train$label) <- make.names(levels(factor(dat.train$label)))
+  levels(data.knn.test$label) <- make.names(levels(factor(data.knn.test$label)))
+  
+  repeats = 3
+  numbers = 10
+  tunel = 3
+  
+  set.seed(1234)
+  x = trainControl(method = "repeatedcv",
+                  number = numbers,
+                  repeats = repeats,
+                  classProbs = TRUE,
+                  summaryFunction = multiClassSummary)
+
+  mod_knn <- train(label~. , data = dat.train, method = "knn",
+                preProcess = c("center","scale"),
+                trControl = x,
+                tuneLength = tunel)
+
+  test_pred <- predict(mod_knn, newdata = data.knn.test)
+
+  cm <- confusionMatrix(test_pred, data.knn.test$label)
+  accuracy <- cm$overall[[1]] #Accuracy
+  correct_knn <- length(data.knn.test$label)*accuracy
+  return(correct_knn)
+}
+
+#load model4
+
+knn3_model_final <- model_iterations(knn3.name, model_knn3, iterations, n.values)
+saveRDS(object = knn3_model_final, file = "knn3.rds")
+
+knn3_fin <- readRDS(file = "knn3.rds")
+knn3_final <- datatable(knn3_fin)
+knn3_final
+scoring_knn3 <- scoring(knn3_fin)
+
+#Ridge Regression
+
+model_ridge <- function(dat.train){
+  dat.train$label<- as.factor(dat.train$label)
+  dat.test <- copy(data.test)
+  mod_ridge <- lm(label~., data = dat.train)
+  x <- model.matrix(mod_ridge, dat.train)[,-1]
+  y1 <- dat.train$label
+  y2 <- dat.test$label
+  z <- data.matrix(dat.test)
+  set.seed(489)
+  train = 1:nrow(x)
+  test = 1:nrow(z)
+  ytest = y2[test]
+  ridge.mod <- glmnet(x[train,], y1[train], family = "multinomial",alpha = 0)
+  cv.out <- cv.glmnet(x[train,], y1[train], family = "multinomial",alpha = 0)
+  bestlamridge <- cv.out$lambda.min
+  ridge.pred.test <- predict(ridge.mod, s = bestlamridge, newx = z[test,][,-1])
+
+  rpt <- as.data.table(ridge.pred.test[,,1])
+  rpt.new <-  names(rpt)[max.col(rpt, "last")]
+  compare<-cbind(dat.test,rpt.new)
+  correct_ridge<-compare[label==rpt.new,.N] 
+  return(correct_ridge)
+
+}
+
+#load model5
+
+ridge_model_final <- model_iterations(ridge.name, model_ridge, iterations, n.values)
+saveRDS(object = ridge_model_final, file = "ridge.rds")
+
+ridge_fin <- readRDS(file = "ridge.rds")
+ridge_final <- datatable(ridge_fin)
+ridge_final
+scoring_ridge <- scoring(ridge_fin)
+
+# Random Forest (trees=100, mtry=7)
+
+model_rf1 <- function(dat.train){
+  data.rf.test<-copy(data.test)
+  dat.train$label <- as.factor(dat.train$label)
+  data.rf.test$label <- as.factor(data.rf.test$label)
+  levels(dat.train$label) <- make.names(levels(factor(dat.train$label)))
+  levels(data.rf.test$label) <- make.names(levels(factor(data.rf.test$label)))
+  
+mod_rf <- randomForest(label~. , data = dat.train,ntree=100,mtry=7)
+
+test_pred <- predict(mod_rf, newdata = data.rf.test)
+
+  cm <- confusionMatrix(test_pred, data.rf.test$label)
+  accuracy <- cm$overall[[1]] #Accuracy
+  correct_rf <- length(data.rf.test$label)*accuracy
+  return(correct_rf)
+}
+
+#load model6
+
+rf1_model_final <- model_iterations(rf1.name, model_rf1, iterations, n.values)
+saveRDS(object = rf1_model_final, file = "rf1.rds")
+
+rf1_fin <- readRDS(file = "rf1.rds")
+rf1_final <- datatable(rf1_fin)
+rf1_final
+scoring_rf1 <- scoring(rf1_fin)
+
+# Random Forest (trees=500, mtry=7)
+
+model_rf2 <- function(dat.train){
+  data.rf.test<-copy(data.test)
+  dat.train$label <- as.factor(dat.train$label)
+  data.rf.test$label <- as.factor(data.rf.test$label)
+  levels(dat.train$label) <- make.names(levels(factor(dat.train$label)))
+  levels(data.rf.test$label) <- make.names(levels(factor(data.rf.test$label)))
+  
+mod_rf <- randomForest(label~. , data = dat.train,ntree=500,mtry=7)
+
+test_pred <- predict(mod_rf, newdata = data.rf.test)
+
+  cm <- confusionMatrix(test_pred, data.rf.test$label)
+  accuracy <- cm$overall[[1]] #Accuracy
+  correct_rf <- length(data.rf.test$label)*accuracy
+  return(correct_rf)
+}
+
+#load model7
+
+rf2_model_final <- model_iterations(rf2.name, model_rf2, iterations, n.values)
+saveRDS(object = rf2_model_final, file = "rf2.rds")
+
+rf2_fin <- readRDS(file = "rf2.rds")
+rf2_final <- datatable(rf2_fin)
+rf2_final
+scoring_rf2 <- scoring(rf2_fin)
+
+# Multinomial Regression
+
+model_mln <- function(dat.train){
+  data.mlr.test<-copy(data.test)
+  dat.train$label <- as.factor(dat.train$label)
+  data.mlr.test$label <- as.factor(data.mlr.test$label)
+  levels(dat.train$label) <- make.names(levels(factor(dat.train$label)))
+  levels(data.mlr.test$label) <- make.names(levels(factor(data.mlr.test$label)))
+  
+mod_mlr<-multinom(formula = label~.,data = dat.train)
+
+test_pred <- predict(mod_mlr, newdata = data.mlr.test)
+
+  cm <- confusionMatrix(test_pred, data.mlr.test$label)
+  accuracy <- cm$overall[[1]] #Accuracy
+  correct_mlr <- length(data.mlr.test$label)*accuracy
+  return(correct_mlr)
+}
+
+#load model8
+
+mln_model_final <- model_iterations(mln.name, model_mln, iterations, n.values)
+saveRDS(object = mln_model_final, file = "mln.rds")
+
+mln_fin <- readRDS(file = "mln.rds")
+mln_final <- datatable(mln_fin)
+mln_final
+scoring_mln <- scoring(mln_fin)
+
+# Lasso Regression
+
+model_lasso <- function(dat.train){
+  dat.train$label<- as.factor(dat.train$label)
+  dat.test <- copy(data.test)
+  mod_lasso <- lm(label~., data = dat.train)
+  x <- model.matrix(mod_lasso, dat.train)[,-1]
+  y1 <- dat.train$label
+  y2 <- dat.test$label
+  z <- data.matrix(dat.test)
+  set.seed(489)
+  train = 1:nrow(x)
+  test = 1:nrow(z)
+  ytest = y2[test]
+  lasso.mod <- glmnet(x[train,], y1[train], family = "multinomial",alpha = 1)
+  cv.out <- cv.glmnet(x[train,], y1[train], family = "multinomial",alpha = 1)
+  bestlamlasso <- cv.out$lambda.min
+  lasso.pred.test <- predict(lasso.mod, s = bestlamlasso, newx = z[test,][,-1])
+
+  rpt <- as.data.table(lasso.pred.test[,,1])
+  rpt.new <-  names(rpt)[max.col(rpt, "last")]
+  compare<-cbind(dat.test,rpt.new)
+  correct_lasso<-compare[label==rpt.new,.N] 
+  return(correct_lasso)
+
+}
+
+#load model 9
+
+lasso_model_final <- model_iterations(lasso.name, model_lasso, iterations, n.values)
+saveRDS(object = lasso_model_final, file = "lasso.rds")
+
+lasso_fin <- readRDS(file = "lasso.rds")
+lasso_final <- datatable(lasso_fin)
+lasso_final
+scoring_lasso <- scoring(lasso_fin)
+
+#Ensemble model (Random Forest, Multinomial and Support Vector Machine)
+
+ensemble_results <- function(dat.train){
+  data.test.copy<-copy(data.test)
+  dat.train$label <- as.factor(dat.train$label)
+  data.test.copy$label <- as.factor(data.test.copy$label)
+  levels(dat.train$label) <- make.names(levels(factor(dat.train$label)))
+  levels(data.test.copy$label) <- make.names(levels(factor(data.test.copy$label)))
+  test.response <- as.numeric(data.test.copy$label)
+  
+  model1 <- randomForest(label~., data = dat.train, ntree = 500, mtry = 7)
+  predict1 <- predict(model1, newdata = data.test.copy)
+  p.test1 <- as.factor(c(as.character(predict1)))
+  
+  model2<-svm(label~., data=dat.train, method="C-classification", kernel="radial", gamma=0.001, cost = 10, probability = TRUE)
+  predict2 <- predict(model2, newdata = data.test.copy, decision.values = TRUE, probability = TRUE)
+  p.test2 <- as.factor(c(as.character(predict2)))
+
+  model3<-multinom(formula = label~.,data = dat.train)
+  predict3 <- predict(model3, newdata = data.test.copy)
+  p.test3 <- as.factor(c(as.character(predict3)))
+  
+  new <- data.frame(cbind(p.test1,p.test2, p.test3))
+  new$majority <- apply(new, 1, median)
+  
+  correct_ensemble<-length(which(new$majority== test.response))
+  
+  
+  return(correct_ensemble)
+}
+
+#load model 10
+
+ensemble_model_final <- model_iterations(ensemble.name, ensemble_results, iterations, n.values)
+saveRDS(object = ensemble_model_final, file = "ensemble.rds")
+
+ensemble_fin <- readRDS(file = "ensemble.rds")
+ensemble_final <- datatable(ensemble_fin)
+ensemble_final
+scoring_ensemble <- scoring(ensemble_fin)
+
+
